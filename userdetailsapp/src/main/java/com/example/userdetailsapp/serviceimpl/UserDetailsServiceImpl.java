@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -20,6 +21,7 @@ import com.example.userdetailsapp.exception.UserException;
 import com.example.userdetailsapp.modal.Address;
 import com.example.userdetailsapp.modal.Company;
 import com.example.userdetailsapp.modal.Geo;
+import com.example.userdetailsapp.modal.SecureUser;
 import com.example.userdetailsapp.modal.UserDetails;
 import com.example.userdetailsapp.repository.AddressRepository;
 import com.example.userdetailsapp.repository.CompanyRepository;
@@ -42,6 +44,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
 	@Autowired
 	AddressRepository addressRepository;
+
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	@Override
 	public Object deleteUser(Long userId) {
@@ -167,10 +172,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 		try {
 			logger.info("Inside addUser of UserDetailsServiceImpl");
 			UserDetails userDetails = new UserDetails();
-			userDetails.setEmail(userDetailsDto.getEmail());
+			// userDetails.setEmail(userDetailsDto.getEmail());
+			logger.info("Encode email is :{}",passwordEncoder.encode(userDetailsDto.getEmail()));
+			userDetails.setEmail(passwordEncoder.encode(userDetailsDto.getEmail()));
 			userDetails.setName(userDetailsDto.getName());
 			userDetails.setPhone(userDetailsDto.getPhone());
-			userDetails.setUserName(userDetailsDto.getUserName());
+			// userDetails.setUserName(userDetailsDto.getUserName());
+			userDetails.setUserName(passwordEncoder.encode(userDetailsDto.getUserName()));
 			UserDetails savedUserDetails = userDetailsRepository.save(userDetails);
 			Address address = new Address();
 			address.setCity(userDetailsDto.getAddress().getCity());
