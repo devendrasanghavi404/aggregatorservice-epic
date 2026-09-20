@@ -15,6 +15,7 @@ import com.example.adminapp.service.AdminService;
 
 @RestController
 public class AdminController {
+	
 
 	Logger logger = LoggerFactory.getLogger(AdminController.class);
 
@@ -27,6 +28,7 @@ public class AdminController {
 		return new ResponseEntity<Object>(adminService.getUserPostById(userId), HttpStatus.OK);
 	}
 
+	
 	@GetMapping(value = "/v1/getAllUserPost")
 	public ResponseEntity<Object> getAllUsersPost() {
 		logger.info("Inside getAllUsersPost of AdminController");

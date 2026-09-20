@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -25,20 +26,41 @@ import com.example.adminapp.dto.GloQuoraPostDto;
 import com.example.adminapp.dto.Response;
 import com.example.adminapp.dto.UserDetailsDto;
 import com.example.adminapp.exception.AdminException;
+import com.example.adminapp.feign.GloQuoraAppProxy;
+import com.example.adminapp.feign.UserDetailsProxy;
 import com.example.adminapp.service.AdminService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
+
 public class AdminserviceImpl implements AdminService {
 
 	Logger logger = LoggerFactory.getLogger(AdminserviceImpl.class);
+
+	RestTemplate restTemplate;
+
+	@Autowired
+	GloQuoraAppProxy gloQuoraAppProxy;
+
+	@Autowired
+	UserDetailsProxy userDetailsProxy;
+	
 
 	@Override
 	public Object getUserPostById(String userId) {
 		logger.info("Inside getUserDataByRestTemplate of FeignDemo3Controller");
 		try {
-			ResponseEntity<Response> response = new RestTemplate()
-					.getForEntity("http://localhost:8080/v1/getAllQuoraPost", Response.class);
+			// ResponseEntity<Response> response = new RestTemplate()
+			// .getForEntity("http://localhost:8080/v1/getAllQuoraPost", Response.class);
+			// ResponseEntity<Response> response = restTemplate
+			// .getForEntity("http://8762/gloquorapplication/v1/getAllQuoraPost",
+			// Response.class);
+			/*
+			 * ResponseEntity<Response> response = restTemplate
+			 * .getForEntity("http://gloquorapplication/v1/getAllQuoraPost",
+			 * Response.class);
+			 */
+			ResponseEntity<Object> response = gloQuoraAppProxy.getAllGloQuoraStatus();
 			ObjectMapper objectMapper = new ObjectMapper();
 			Response response2 = objectMapper.convertValue(response.getBody(), Response.class);
 			logger.info("Response is :{}", response2.getData());
@@ -56,6 +78,7 @@ public class AdminserviceImpl implements AdminService {
 			}
 			return new Response<Object>(listDataResponse, "Post  fetched Successfully", "1");
 		} catch (Exception e) {
+			e.printStackTrace();
 			String errorMsg = MessageFormat.format("Exception caught in getUserPostById of AdminService :{0}", e);
 			logger.error(errorMsg);
 			throw new AdminException(e.getMessage());
@@ -66,8 +89,11 @@ public class AdminserviceImpl implements AdminService {
 	@Override
 	public Object getAllUserPost() {
 		try {
-			ResponseEntity<Response> responseFromUserDetails = new RestTemplate()
-					.getForEntity("http://localhost:8765/v1/getAllUsersDetails", Response.class);
+			/*
+			 * ResponseEntity<Response> responseFromUserDetails = new RestTemplate()
+			 * .getForEntity("http://localhost:8765/v1/getAllUsersDetails", Response.class);
+			 */
+			ResponseEntity<Object> responseFromUserDetails = userDetailsProxy.getAllUserDetails();
 			ObjectMapper objectMapper3 = new ObjectMapper();
 			Response response4 = objectMapper3.convertValue(responseFromUserDetails.getBody(), Response.class);
 			logger.info("Response is :{}", response4.getData());
@@ -79,9 +105,12 @@ public class AdminserviceImpl implements AdminService {
 				UserDetailsDto response3 = objectMapper1.convertValue(object3, UserDetailsDto.class);
 				listDataResponse2.add(response3);
 			}
-			logger.info("listDataResponse2 is :{}",listDataResponse2);
-			ResponseEntity<Response> response = new RestTemplate()
-					.getForEntity("http://localhost:8080/v1/getAllQuoraPost", Response.class);
+			logger.info("listDataResponse2 is :{}", listDataResponse2);
+			/*
+			 * ResponseEntity<Response> response = new RestTemplate()
+			 * .getForEntity("http://localhost:8080/v1/getAllQuoraPost", Response.class);
+			 */
+			ResponseEntity<Object> response = gloQuoraAppProxy.getAllGloQuoraStatus();
 			ObjectMapper objectMapper = new ObjectMapper();
 			Response response2 = objectMapper.convertValue(response.getBody(), Response.class);
 			Object object = response2.getData();
@@ -94,7 +123,7 @@ public class AdminserviceImpl implements AdminService {
 				listDataResponse.add(response3);
 				System.out.println(response3);
 			}
-			logger.info("listDataResponse is:{}",listDataResponse);
+			logger.info("listDataResponse is:{}", listDataResponse);
 			HashMap<String, List<GloQuoraPostDto>> map = new HashMap<>();
 			for (GloQuoraPostDto gloQuoraPostDto : listDataResponse) {
 				if (map.containsKey(gloQuoraPostDto.getUserId())) {
@@ -106,20 +135,18 @@ public class AdminserviceImpl implements AdminService {
 					list1.add(gloQuoraPostDto);
 					map.put(gloQuoraPostDto.getUserId(), list1);
 				}
-				
+
 			}
-			logger.info("map is:{}",map);
+			logger.info("map is:{}", map);
 			List<UserDetailsDto> finalList = new ArrayList<>();
 			for (UserDetailsDto userDetailsDto : listDataResponse2) {
 				if (map.containsKey(String.valueOf(userDetailsDto.getUserId()))) {
-					logger.info("Post for a user is :{}",map.get(String.valueOf(userDetailsDto.getUserId())) );
+					logger.info("Post for a user is :{}", map.get(String.valueOf(userDetailsDto.getUserId())));
 					userDetailsDto.setPostList(map.get(String.valueOf(userDetailsDto.getUserId())));
 					finalList.add(userDetailsDto);
 				}
 			}
 			return new Response<Object>(finalList, "Post  fetched Successfully", "1");
-
-
 		} catch (Exception e) {
 			e.printStackTrace();
 			String errorMsg = MessageFormat.format("Exception caught in getUserPostById of AdminService :{0}", e);
@@ -132,8 +159,12 @@ public class AdminserviceImpl implements AdminService {
 	public Object getUserPostByNumber(Long postCount) {
 		logger.info("Inside getUserDataByRestTemplate of FeignDemo3Controller");
 		try {
-			ResponseEntity<Response> response = new RestTemplate()
-					.getForEntity("http://localhost:8080/v1/getAllQuoraPost", Response.class);
+			/*
+			 * ResponseEntity<Response> response = new RestTemplate()
+			 * .getForEntity("http://localhost:8080/v1/getAllQuoraPost", Response.class);
+			 */
+			
+			ResponseEntity<Object> response = gloQuoraAppProxy.getAllGloQuoraStatus();
 			ObjectMapper objectMapper = new ObjectMapper();
 			Response response2 = objectMapper.convertValue(response.getBody(), Response.class);
 			logger.info("Response is :{}", response2.getData());
@@ -182,8 +213,11 @@ public class AdminserviceImpl implements AdminService {
 	public Object getCompanyName() {
 		logger.info("Inside getUserDataByRestTemplate of FeignDemo3Controller");
 		try {
-			ResponseEntity<Response> response = new RestTemplate()
-					.getForEntity("http://localhost:8080/v1/getAllQuoraPost", Response.class);
+			/*
+			 * ResponseEntity<Response> response = new RestTemplate()
+			 * .getForEntity("http://localhost:8080/v1/getAllQuoraPost", Response.class);
+			 */
+			ResponseEntity<Object> response = gloQuoraAppProxy.getAllGloQuoraStatus();
 			ObjectMapper objectMapper = new ObjectMapper();
 			Response response2 = objectMapper.convertValue(response.getBody(), Response.class);
 			logger.info("Response is :{}", response2.getData());
@@ -199,8 +233,11 @@ public class AdminserviceImpl implements AdminService {
 			}
 			List<String> listOfUersID = listDataResponse.stream().map(x -> x.getUserId()).collect(Collectors.toList());
 
-			ResponseEntity<Response> responseFromUserDetails = new RestTemplate()
-					.getForEntity("http://localhost:8765/v1/getAllUsersDetails", Response.class);
+			/*
+			 * ResponseEntity<Response> responseFromUserDetails = new RestTemplate()
+			 * .getForEntity("http://localhost:8765/v1/getAllUsersDetails", Response.class);
+			 */
+			ResponseEntity<Object> responseFromUserDetails =userDetailsProxy.getAllUserDetails();
 			ObjectMapper objectMapper3 = new ObjectMapper();
 			Response response4 = objectMapper3.convertValue(responseFromUserDetails.getBody(), Response.class);
 			logger.info("Response is :{}", response4.getData());
